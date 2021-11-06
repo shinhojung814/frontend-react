@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+    <head></head>
+    <body style>
+        <div id="root"></div>
+    </body>
+    <script src="https://unpkg.com/react@17.0.2/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@17.0.2/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script type="text/babel">
+        function App() {
+            const [time, setTime] = React.useState();
+            const [inverted, setInverted] = React.useState(false);
+            const onChange= (event) => {
+                console.log("UPDATED");
+                setTime(event.target.value);
+            };
+            const reset = () => setTime(0);
+            const onInvert = () => {
+                reset();
+                setInverted((current) => !current);
+            }
+
+            return (
+                <div>
+                    <div>
+                        <h1 className="title">TIME CONVERTER</h1>
+                        <label htmlFor="minutes"> MINUTES </label>
+                        <input
+                            id="minutes"
+                            type="number"
+                            value={ inverted ? (time * 60) : time }
+                            placeholder="MINUTES"
+                            onChange={ onChange }
+                            disabled={ inverted }
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="hours"> HOURS </label>
+                        <input
+                            id="hours"
+                            type="number"
+                            value={ inverted ? time : Math.round(time / 60) }
+                            placeholder="HOURS"
+                            onChange = { onChange }
+                            disabled={ !inverted }
+                        />
+                    </div>
+                    <p>
+                        <button onClick={ reset }>RESET</button>
+                        <button onClick={ onInvert }>INVERT</button>
+                    </p>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<App />, root);
+    </script>
+</html>
