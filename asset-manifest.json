@@ -1,20 +1,20 @@
 {
   "files": {
-    "main.css": "/frondend-react/static/css/main.ae85a205.chunk.css",
-    "main.js": "/frondend-react/static/js/main.3d14c5b6.chunk.js",
-    "main.js.map": "/frondend-react/static/js/main.3d14c5b6.chunk.js.map",
+    "main.css": "/frondend-react/static/css/main.e54a9156.chunk.css",
+    "main.js": "/frondend-react/static/js/main.ce499a51.chunk.js",
+    "main.js.map": "/frondend-react/static/js/main.ce499a51.chunk.js.map",
     "runtime-main.js": "/frondend-react/static/js/runtime-main.4562c13c.js",
     "runtime-main.js.map": "/frondend-react/static/js/runtime-main.4562c13c.js.map",
-    "static/js/2.af578497.chunk.js": "/frondend-react/static/js/2.af578497.chunk.js",
-    "static/js/2.af578497.chunk.js.map": "/frondend-react/static/js/2.af578497.chunk.js.map",
+    "static/js/2.e91a653c.chunk.js": "/frondend-react/static/js/2.e91a653c.chunk.js",
+    "static/js/2.e91a653c.chunk.js.map": "/frondend-react/static/js/2.e91a653c.chunk.js.map",
     "index.html": "/frondend-react/index.html",
-    "static/css/main.ae85a205.chunk.css.map": "/frondend-react/static/css/main.ae85a205.chunk.css.map",
-    "static/js/2.af578497.chunk.js.LICENSE.txt": "/frondend-react/static/js/2.af578497.chunk.js.LICENSE.txt"
+    "static/css/main.e54a9156.chunk.css.map": "/frondend-react/static/css/main.e54a9156.chunk.css.map",
+    "static/js/2.e91a653c.chunk.js.LICENSE.txt": "/frondend-react/static/js/2.e91a653c.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
     "static/js/runtime-main.4562c13c.js",
-    "static/js/2.af578497.chunk.js",
-    "static/css/main.ae85a205.chunk.css",
-    "static/js/main.3d14c5b6.chunk.js"
+    "static/js/2.e91a653c.chunk.js",
+    "static/css/main.e54a9156.chunk.css",
+    "static/js/main.ce499a51.chunk.js"
   ]
 }
