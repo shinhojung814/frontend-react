@@ -1,24 +1,13 @@
-import { Container } from 'react-bootstrap';
-import Layout from './layouts/Layout';
+import React from "react";
+import MultiAquarium from "./pages/MultiAquarium";
+
+import "./App.css";
 
 function App() {
   return (
-    <Layout>
-      <Container style={{ minHeight: "75vh" }}>
-        <div>
-          <h1>목표달성! 외계생물 기르기</h1>
-          <h1>목표달성! 외계생물 기르기</h1>
-          <h1>목표달성! 외계생물 기르기</h1>
-          <h1>목표달성! 외계생물 기르기</h1>
-          <h1>목표달성! 외계생물 기르기</h1>
-          <h1>목표달성! 외계생물 기르기</h1>
-          <h1>목표달성! 외계생물 기르기</h1>
-          <h1>목표달성! 외계생물 기르기</h1>
-          <h1>목표달성! 외계생물 기르기</h1>
-          <h1>목표달성! 외계생물 기르기</h1>
-        </div>
-      </Container>
-    </Layout>
+    <div className="App">
+      <MultiAquarium />
+    </div>
   );
 }
 

@@ -1,14 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button, Container, Form, Modal } from 'react-bootstrap';
-import { GoogleLogin } from 'react-google-login';
+// import { GoogleLogin } from 'react-google-login';
 import HorizonLine from '../components/HorizonLine.js'
 
 const SignInModal = ({ show, onHide }) => {
+    // const [showSignUp, setShowSignUp] = useState({showSignUp});
+    // const [showSignIn, setShowSignIn] = useState({showSignIn});
+
     return (
         <Modal
             show={show}
             onHide={onHide}
-            size="lg"
             aria-labelledby="contained-modal-title-vcenter"
             centered
         >
@@ -22,26 +24,27 @@ const SignInModal = ({ show, onHide }) => {
                     <Form>
                         <Form.Group>
                             <Form.Label>이메일</Form.Label>
-                            <Form.Control type="email" placeholder="너의 이메일은..?" />
+                            <Form.Control type="email" placeholder="helloalien@jungle.com" />
                         </Form.Group>
 
                         <Form.Group>
                             <Form.Label>패스워드</Form.Label>
-                            <Form.Control type="password" placeholder="너의 패스워드는..?" />
+                            <Form.Control type="password" placeholder="********" />
                         </Form.Group>
 
                         <Button
                             className="my-3"
                             type="button"
-                            variant="info"
+                            variant="success"
                             style={{
                                 width: "100%"
                             }}
+                            // onClick={() => 로그인 상태(true)}
                         >
                             로그인
                         </Button>
                         <HorizonLine text={"OR"} />
-                        <GoogleLogin
+                        {/* <GoogleLogin
                             render={(renderProps) => {
                                 return (
                                     <Button
@@ -58,7 +61,7 @@ const SignInModal = ({ show, onHide }) => {
                                     </Button>
                                 );
                             }}
-                        />
+                        /> */}
                     </Form>
                 </Modal.Body>
             </Container>
