@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Button, Container, Form, Modal } from "react-bootstrap";
+import styles from "./SignUpModal.module.css";
 import HorizonLine from "../components/HorizonLine.js";
 import * as api from "../apis/index.js";
 
@@ -9,14 +10,22 @@ const SignUpModal = ({ show, onHide, setSignUpModalOn, setLoginStatus }) => {
   const [userEmail, setUserEmail] = useState("");
   const [userPassword, setUserPassword] = useState("");
   const [userConfirm, setUserConfirm] = useState("");
-  // 에러 변수 추가
+
   const [signUpClicked, setSignUpClicked] = useState(false);
   const [signUpError, setSignUpError] = useState(null);
+  const [signUpMessage, setSignUpMessage] = useState(null);
 
-  let signUpData = { userNickname, userEmail, userPassword, userConfirm };
-  console.log("signUpData", signUpData);
+  function validateEmail(userEmail) {
+    if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test({ userEmail })) {
+      return true;
+    } else {
+      setSignUpMessage("입력하신 이메일 주소가 유효하지 않습니다.");
+      return false;
+    }
+  }
 
   const postSignUp = async () => {
+    let signUpData = { userNickname, userEmail, userPassword, userConfirm };
     const response = await api.post("/login_process", signUpData);
     console.log("response", response);
     // const data = await response.json();
@@ -27,6 +36,7 @@ const SignUpModal = ({ show, onHide, setSignUpModalOn, setLoginStatus }) => {
 
   useEffect(() => {
     try {
+      setSignUpMessage(null);
       setSignUpError(null);
       postSignUp();
     } catch (err) {
@@ -59,6 +69,21 @@ const SignUpModal = ({ show, onHide, setSignUpModalOn, setLoginStatus }) => {
     };
   }
 
+  const onClick = (event) => {
+    event.preventDefault();
+    setSignUpClicked(true);
+  };
+
+  // function showSignUpMessage() {
+  //   return () => {
+  //     {
+  //       signUp성공/실패 여부
+  //         ? null
+  //         : {signUpMessage}
+  //     }
+  //   };
+  // }
+
   return (
     <Modal
       show={show}
@@ -81,6 +106,7 @@ const SignUpModal = ({ show, onHide, setSignUpModalOn, setLoginStatus }) => {
                   setUserNickname(e.target.value);
                 }}
               />
+              <br />
             </Form.Group>
 
             <Form.Group>
@@ -92,6 +118,7 @@ const SignUpModal = ({ show, onHide, setSignUpModalOn, setLoginStatus }) => {
                   setUserEmail(e.target.value);
                 }}
               />
+              <br />
             </Form.Group>
 
             <Form.Group>
@@ -103,6 +130,7 @@ const SignUpModal = ({ show, onHide, setSignUpModalOn, setLoginStatus }) => {
                   setUserPassword(e.target.value);
                 }}
               />
+              <br />
             </Form.Group>
 
             <Form.Group>
@@ -114,7 +142,14 @@ const SignUpModal = ({ show, onHide, setSignUpModalOn, setLoginStatus }) => {
                   setUserConfirm(e.target.value);
                 }}
               />
+              <br />
             </Form.Group>
+
+            <Form.Group className={styles.form__signup__message}>
+              {signUpMessage}
+              <br />
+            </Form.Group>
+
             <Button
               className="my-3"
               type="button"
@@ -122,10 +157,7 @@ const SignUpModal = ({ show, onHide, setSignUpModalOn, setLoginStatus }) => {
               style={{
                 width: "100%",
               }}
-              onClick={() => {
-                setSignUpClicked(true);
-                postSignUp();
-              }}
+              onClick={onClick}
             >
               회원가입
             </Button>
