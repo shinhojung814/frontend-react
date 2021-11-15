@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Button, Container, Form, Modal } from "react-bootstrap";
 import styles from "./SignUpModal.module.css";
-import HorizonLine from "../components/HorizonLine.js";
-import * as api from "../apis/index.js";
+import api from "../apis/index.js";
 
 const SignUpModal = ({ show, onHide, setSignUpModalOn, setLoginStatus }) => {
   const [userNickname, setUserNickname] = useState("");
@@ -11,28 +10,27 @@ const SignUpModal = ({ show, onHide, setSignUpModalOn, setLoginStatus }) => {
   const [userConfirm, setUserConfirm] = useState("");
 
   const [signUpClicked, setSignUpClicked] = useState(false);
-  const [signUpError, setSignUpError] = useState(null);
   const [signUpMessage, setSignUpMessage] = useState(null);
 
   function validateSignUp(userNickname, userEmail, userPassword, userConfirm) {
     if (
-      (userEmail != "") &
+      (userEmail !== "") &
       !/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(userEmail)
     ) {
       setSignUpMessage("입력하신 이메일 주소가 유효하지 않습니다.");
       return false;
     }
 
-    if (userPassword != userConfirm) {
+    if (userPassword !== userConfirm) {
       setSignUpMessage("입력하신 패스워드가 일치하지 않습니다.");
       return false;
     }
 
     if (
-      userNickname == "" ||
-      userEmail == "" ||
-      userPassword == "" ||
-      userConfirm == ""
+      userNickname === "" ||
+      userEmail === "" ||
+      userPassword === "" ||
+      userConfirm === ""
     ) {
       setSignUpMessage("입력하지 않은 회원정보가 있습니다.");
       return false;
@@ -42,47 +40,27 @@ const SignUpModal = ({ show, onHide, setSignUpModalOn, setLoginStatus }) => {
     return true;
   }
 
-  const postSignUp = async () => {
-    let signUpData = { userNickname, userEmail, userPassword, userConfirm };
-    const response = await api.post("/login_process", signUpData);
-    console.log("response", response);
-    // const data = await response.json();
-    // console.log("data", data);
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setSignUpMessage(null);
+    if (!validateSignUp(userNickname, userEmail, userPassword, userConfirm))
+      return;
+    setSignUpMessage(null);
+    setSignUpClicked(true);
+    postSignUp();
   };
 
-  console.log("signUpClicked", signUpClicked);
-
-  // 회원가입 버튼을 처음 눌렀을 때만 포스트 요청이 보내지도록 설정 (useEffect, signUpClicked 이용)
-  useEffect(() => {
-    try {
-      setSignUpError(null);
-      postSignUp();
-    } catch (err) {
-      setSignUpError(err);
-      console.log("SIGN-UP ERROR", signUpError);
-    }
-  }, [signUpClicked]);
-
-  function signUpSuccess() {
-    return () => {
+  const postSignUp = async () => {
+    let signUpData = { userNickname, userEmail, userPassword, userConfirm };
+    const res = await api.post("/user/register", signUpData);
+    console.log("res", res);
+    if (res.data.result === "success") {
+      // TODO: Redux 처리
+      alert("회원가입에 성공하였습니다.");
       setSignUpClicked(false);
       setSignUpModalOn(false);
-    };
-  }
-
-  function signUpFailure() {
-    return () => {
+    } else {
       setSignUpClicked(false);
-    };
-  }
-
-  const onClick = (event) => {
-    event.preventDefault();
-    setSignUpMessage(null);
-    if (
-      validateSignUp(userNickname, userEmail, userPassword, userConfirm) == true
-    ) {
-      setSignUpClicked(true);
     }
   };
 
@@ -168,7 +146,7 @@ const SignUpModal = ({ show, onHide, setSignUpModalOn, setLoginStatus }) => {
               style={{
                 width: "100%",
               }}
-              onClick={onClick}
+              onClick={handleSubmit}
             >
               회원가입
             </Button>
