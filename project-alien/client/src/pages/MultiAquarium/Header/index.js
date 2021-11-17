@@ -1,71 +1,52 @@
 import React, { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { Button } from "react-bootstrap";
 import styles from "./index.module.css";
 import SignUpModal from "../../../modals/SignUpModal";
 import SignInModal from "../../../modals/SignInModal";
-import SideBarModal from "./Modal/SideBarModal.js";
-import { useDispatch } from "react-redux";
-import * as actions from "../../../Redux/actions/index.js";
-
-import api from "../../../apis";
-
+import ChallengeModal from "./Modal/ChallengeModal";
+import * as actions from "../../../Redux/actions";
+import api from "../../../apis/index";
 import classNames from "classnames/bind";
 const cx = classNames.bind(styles);
 
 export default function Header(props) {
   const { rooms, roomId, setRoomId } = props;
-  const dispatch = useDispatch();
   const [loginStatus, setLoginStatus] = useState(false);
   const [signUpModalOn, setSignUpModalOn] = useState(false);
   const [signInModalOn, setSignInModalOn] = useState(false);
+  const [challengeModalOn, setChallengeModalOn] = useState(false);
 
-  // 모달창
-  const [showModal, setShowModal] = useState(false);
-  const openModal = () => {
-    setShowModal(true);
-  };
-  const closeModal = () => {
-    setShowModal(false);
+  const dispatch = useDispatch();
+  const showModal1 = useSelector((state) => state.modalOnOff.showModal1);
+
+  const postSignOut = async () => {
+    const res = await api.get("/user/logout");
+    console.log("res", res);
+    setLoginStatus(false);
+    alert("성공적으로 로그아웃하였습니다.");
   };
 
-  const [testUser, setTestUser] = useState(false);
-  const [userInfo, setUserInfo] = useState(null);
+  const handleLogout = (e) => {
+    // TODO: Redux 처리 - setSignInClicked();
+    postSignOut();
+  };
+
+  const handleClick = (current) => {
+    // dispatch(actions.showModal((current) => !current));
+  };
 
   useEffect(() => {
-    console.log(testUser);
-    if (!!userInfo && !testUser) {
-      // logout
-      try {
-        const fetchLogout = async () => {
-          console.log(111);
-          const res = await api.get("/user/logout");
-          console.log("fetch test logout result", res.data);
-        };
-        fetchLogout();
-      } catch (err) {
-        console.error("fetch test user fail", err);
-        // setTestUser(false);
+    const getLoginStatus = async () => {
+      const res = await api.get("/user/login/confirm");
+      console.log("res", res);
+      if (res.data.login) {
+        setLoginStatus(true);
       }
-    }
+    };
 
-    if (testUser) {
-      // login
-      console.log(222);
-      try {
-        const fetchUser = async () => {
-          const user = { email: "kjy@kjy.net", pwd: 12345 };
-          // console.log("fetch test user", user);
-          const res = await api.post("/user/login", user);
-          console.log("fetch test user result", res.data);
-          setUserInfo(user.email);
-        };
-        fetchUser();
-      } catch (err) {
-        console.error("fetch test user fail", err);
-        // setTestUser(false);
-      }
-    }
-  }, [testUser]);
+    getLoginStatus();
+  }, []);
 
   return (
     <div className={styles.body}>
@@ -81,20 +62,24 @@ export default function Header(props) {
         ))}
       </div>
       <div className={cx("item", "itemHistory")}>
-        <button onClick={openModal}>나의 기록</button>
-        <button onClick={() => setTestUser(true)}>테스트 로그인</button>
-        <button onClick={() => setTestUser(false)}>테스트 로그아웃</button>
+        <button
+        // onClick={(current) =>
+        //   dispatch(actions.showModal((current) => !current))
+        // }
+        >
+          나의 기록
+        </button>
       </div>
       {loginStatus ? (
         <div className={cx("item", "itemUser")}>
           <Button
-            variant="primary"
-            // onClick={() => setSignUpModalOn(true)}
+            variant="danger"
+            onClick={() => dispatch(actions.showModal(!showModal1))}
           >
-            나의 기록
+            새로운 챌린지 생성
           </Button>
           <h1>&nbsp;</h1>
-          <Button variant="info" onClick={() => setLoginStatus(false)}>
+          <Button variant="info" onClick={handleLogout}>
             로그아웃
           </Button>
         </div>
@@ -119,10 +104,10 @@ export default function Header(props) {
         setLoginStatus={setLoginStatus}
         setSignInModalOn={setSignInModalOn}
       />
-      <SideBarModal
-        showModal={showModal}
-        closeModal={closeModal}
-      ></SideBarModal>
+      <ChallengeModal
+        show={challengeModalOn}
+        onHide={() => setChallengeModalOn(false)}
+      />
     </div>
   );
 }

@@ -17,12 +17,17 @@ const SignUpModal = ({ show, onHide, setSignUpModalOn, setLoginStatus }) => {
       (userEmail !== "") &
       !/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(userEmail)
     ) {
-      setSignUpMessage("입력하신 이메일 주소가 유효하지 않습니다.");
+      setSignUpMessage("이메일 주소가 유효하지 않습니다.");
+      return false;
+    }
+
+    if (userNickname.length > 20) {
+      setSignUpMessage("닉네임은 최대 20글자 이하여야 합니다.");
       return false;
     }
 
     if (userPassword !== userConfirm) {
-      setSignUpMessage("입력하신 패스워드가 일치하지 않습니다.");
+      setSignUpMessage("패스워드가 일치하지 않습니다.");
       return false;
     }
 
@@ -58,9 +63,15 @@ const SignUpModal = ({ show, onHide, setSignUpModalOn, setLoginStatus }) => {
       // TODO: Redux 처리
       alert("회원가입에 성공하였습니다.");
       setSignUpClicked(false);
-      setSignUpModalOn(false);
+      // setSignUpModalOn(false);
     } else {
-      setSignUpClicked(false);
+      if (res.data.msg === "DB Insert Fail.") {
+        setSignUpMessage("이미 존재하는 이메일입니다.");
+        setSignUpClicked(false);
+      } else {
+        setSignUpMessage("이미 존재하는 닉네임입니다.");
+        setSignUpClicked(false);
+      }
     }
   };
 
