@@ -14,7 +14,7 @@ export default function SideBarModal() {
       <div
         className={showModal1 ? "Background" : null}
         onClick={() => {
-          dispatch(actions.showModal(false));
+          dispatch(actions.showModal1(false));
         }}
       />
       <div className={showModal1 ? "ModalContainer" : "hidden"}>

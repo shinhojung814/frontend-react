@@ -6,7 +6,7 @@ import styles from "./index.module.css";
 import SignUpModal from "../../../modals/SignUpModal";
 import SignInModal from "../../../modals/SignInModal";
 import ChallengeModal from "./Modal/ChallengeModal";
-import SideBarModal from "./SideBarModal";
+import SideBarModal from "./Modal/SideBarModal";
 import * as actions from "../../../Redux/actions";
 import api from "../../../apis/index";
 import classNames from "classnames/bind";
