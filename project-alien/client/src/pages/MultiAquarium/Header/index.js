@@ -1,30 +1,34 @@
 import React, { useState, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { Link } from "react-router-dom";
 import { Button } from "react-bootstrap";
 import styles from "./index.module.css";
 import SignUpModal from "../../../modals/SignUpModal";
 import SignInModal from "../../../modals/SignInModal";
 import ChallengeModal from "./Modal/ChallengeModal";
+import SideBarModal from "./SideBarModal";
 import * as actions from "../../../Redux/actions";
 import api from "../../../apis/index";
 import classNames from "classnames/bind";
 const cx = classNames.bind(styles);
 
 export default function Header(props) {
-  const { rooms, roomId, setRoomId } = props;
-  const [loginStatus, setLoginStatus] = useState(false);
+  // redux에서 user정보 받아오기
+  const { user } = useSelector(({ user }) => ({ user: user.user }));
+  // const roomId = useSelector(({room}) =>({ roomId : room.roomId.roomId }))
+  const dispatch = useDispatch();
+  const showModal1 = useSelector((state) => state.modalOnOff.showModal1);
+  const showModal3 = useSelector((state) => state.modalOnOff.showModal3);
+  const { roomId } = props;
+  // const [loginStatus, setLoginStatus] = useState(false);
   const [signUpModalOn, setSignUpModalOn] = useState(false);
   const [signInModalOn, setSignInModalOn] = useState(false);
   const [challengeModalOn, setChallengeModalOn] = useState(false);
 
-  const dispatch = useDispatch();
-  const showModal1 = useSelector((state) => state.modalOnOff.showModal1);
-
   const postSignOut = async () => {
     const res = await api.get("/user/logout");
-    console.log("res", res);
-    setLoginStatus(false);
-    alert("성공적으로 로그아웃하였습니다.");
+    dispatch(actions.logout());
+    // setLoginStatus(false);
   };
 
   const handleLogout = (e) => {
@@ -32,49 +36,59 @@ export default function Header(props) {
     postSignOut();
   };
 
-  const handleClick = (current) => {
-    // dispatch(actions.showModal((current) => !current));
-  };
-
   useEffect(() => {
     const getLoginStatus = async () => {
-      const res = await api.get("/user/login/confirm");
-      console.log("res", res);
-      if (res.data.login) {
-        setLoginStatus(true);
+      // 1단계: 로그인 상태 확인
+      let res = await api.get("/user/login/confirm");
+      if (!res.data.login) return;
+      let user = res.data;
+      user.challenges = [];
+      // 2단계: 유저 관련 정보 확인 (참여중 챌린지 등)
+      res = await api.get("/user/personalinfo");
+      if (res.data.result === "success") {
+        user.challenges = res.data.Challenge;
       }
+      // 리덕스에 저장
+      dispatch(actions.checkUser(user));
     };
-
     getLoginStatus();
-  }, []);
+  }, [dispatch]);
+
+  // console.log("[Header] user", user);
 
   return (
     <div className={styles.body}>
       <div className={cx("item", "itemTitle")}>
-        <h1 className={styles.title}>{`Aquarium: ROOM ${roomId}`}</h1>
+        <button onClick={() => dispatch(actions.showModal1(!showModal1))}>
+          생명체 리스트
+        </button>
+        <h1 className={styles.title}>{`${roomId ? roomId : ""}`}</h1>
       </div>
       <div className={cx("item", "itemRoom")}>
-        {rooms.map((roomId) => (
-          <button
-            key={roomId}
-            onClick={() => setRoomId(roomId)}
-          >{`Room ${roomId}`}</button>
-        ))}
+        <Link to={"/"}>
+          <button>{"메인화면"}</button>
+        </Link>
+        {user && user.nickname && (
+          <Link to={`/user/${user.id}`}>
+            <button>{"나의 어항"}</button>
+          </Link>
+        )}
+
+        {/* {user &&
+          user.nickname &&
+          user.challenges.map((c) => (
+            <Link to={`/challenge/${c.Challenge_id}`}>
+              <button>{c.challengeName}</button>
+            </Link>
+          ))} */}
       </div>
-      <div className={cx("item", "itemHistory")}>
-        <button
-        // onClick={(current) =>
-        //   dispatch(actions.showModal((current) => !current))
-        // }
-        >
-          나의 기록
-        </button>
-      </div>
-      {loginStatus ? (
+      {user ? (
         <div className={cx("item", "itemUser")}>
+          <div className={styles.username}>{user && user.nickname}</div>
+          <h1>&nbsp;</h1>
           <Button
             variant="danger"
-            onClick={() => dispatch(actions.showModal(!showModal1))}
+            onClick={() => dispatch(actions.showModal3(!showModal3))}
           >
             새로운 챌린지 생성
           </Button>
@@ -101,13 +115,13 @@ export default function Header(props) {
       <SignInModal
         show={signInModalOn}
         onHide={() => setSignInModalOn(false)}
-        setLoginStatus={setLoginStatus}
         setSignInModalOn={setSignInModalOn}
       />
       <ChallengeModal
         show={challengeModalOn}
         onHide={() => setChallengeModalOn(false)}
       />
+      <SideBarModal />
     </div>
   );
 }
