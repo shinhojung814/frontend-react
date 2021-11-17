@@ -18,7 +18,7 @@ export default function SideBarModal() {
         }}
       />
       <div className={showModal1 ? "ModalContainer" : "hidden"}>
-        <div>모달달1</div>
+        {/* <div>모달달1</div> */}
         <PostList />
         {/* <button
           onClick={() => {
