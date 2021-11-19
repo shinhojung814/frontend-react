@@ -85,17 +85,26 @@ export default function Header(props) {
   return (
     <div className={styles.body}>
       <div className={cx("item", "itemTitle")}>
-        <button onClick={() => switchModal1()}>생명체 리스트</button>
+        <button onClick={() => switchModal1()}>Aliens</button>
         <h1 className={styles.title}>{`${roomId ? roomId : ""}`}</h1>
       </div>
       <div className={cx("item", "itemRoom")}>
         <Link to={"/"}>
           <button>{"메인화면"}</button>
         </Link>
+        {/* <Link to={"/challenge/1"}>
+          <button>{"챌린지1"}</button>
+        </Link>
+        <Link to={"/challenge/42"}>
+          <button>{"챌린지42"}</button>
+        </Link> */}
         {user && user.nickname && (
           <Link to={`/user/${user.id}`}>
             <button>{"나의 어항"}</button>
           </Link>
+        )}
+        {user && user.nickname && (
+          <button onClick={() => switchModal3()}>새로운 챌린지 생성</button>
         )}
 
         {/* {user &&
@@ -109,11 +118,6 @@ export default function Header(props) {
       {user ? (
         <div className={cx("item", "itemUser")}>
           <div className={styles.username}>{user && user.nickname}</div>
-          <h1>&nbsp;</h1>
-          <Button variant="danger" onClick={() => switchModal3()}>
-            새로운 챌린지 생성
-          </Button>
-          <h1>&nbsp;</h1>
           <Button variant="info" onClick={handleLogout}>
             로그아웃
           </Button>
