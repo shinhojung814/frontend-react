@@ -19,28 +19,40 @@ export default function ChallengeRoom(props) {
 
   // user 정보 확인
   const { user } = useSelector(({ user }) => ({ user: user.user }));
-  const userId = user && user.id;
-  const isChaIdIn = (challenges, cId) => {
-    return challenges.findIndex((c) => c.Challenge_id === cId) !== -1;
-  };
-  let participating = user && isChaIdIn(user.challenges, Number(challengeId));
+  const userId = user.login && user.id;
+
+  // 본 챌린지에 참가중인지 확인
+  let participating = false;
+  if (user.login && user.challenges) {
+    participating =
+      user.challenges.findIndex((c) => c.id === Number(challengeId)) !== -1;
+  }
+
   // console.log("[ChallengeRoom] is participating?", participating);
 
   useEffect(() => {
     try {
       const fetchData = async () => {
-        const res = await api.post("/user/aquarium/challenge", {
-          challenge_id: challengeId,
-        });
-        // console.log("fetch challenge data", res.data.Alien);
+        let res = await api.get(`/challenge/${challengeId}`);
+        // console.log("fetch challenge data", res.data);
         if (res.data.result === "success") {
           // rooms 상태 정보
-          const aliens = res.data.Alien;
+          const aliens = res.data.aliens;
+          const challenge = res.data.challenge;
+          const roomTitle = `${challenge.challenge_name}`;
           rooms.current[roomId].initMonsters(aliens);
           rooms.current[roomId].start();
           // update redux room info
-          dispatch(actions.setRoom({ roomId, aliens }));
+          dispatch(actions.setRoom({ roomId, aliens, roomTitle, challenge }));
         } else {
+          return;
+        }
+        res = await api.get(`/chat/${challengeId}`);
+        if (res.data.result === "success") {
+          const messages = res.data.data;
+          dispatch(actions.setMessage(messages));
+        } else {
+          return;
         }
       };
       fetchData();
@@ -55,7 +67,7 @@ export default function ChallengeRoom(props) {
   useEffect(() => {
     // user가 참여중인 방인지 확인
     if (participating && rooms.current[roomId]) {
-      // console.log("handle socket here!", participating);
+      // console.log("handle socket here!", participating);initMonsters
       socket.initAndJoin({ roomId, userId: userId });
       socket.usersOnRoom(rooms.current[roomId].usersOnRoomHandler);
       socket.messageReceive((msg) => dispatch(actions.setMessage(msg)));
