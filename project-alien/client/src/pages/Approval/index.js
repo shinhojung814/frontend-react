@@ -14,7 +14,7 @@ const cx = classNames.bind();
 
 export default function Approval(props) {
   const [authRequests, setAuthRequests] = useState([]);
-  // const [orderRequests, setOrderRequests] = useState(true);
+  const [filterRequests, setFilterRequests] = useState(false);
 
   useEffect(() => {
     const loadAuthRequests = async () => {
@@ -24,69 +24,103 @@ export default function Approval(props) {
         console.log("현재 수락을 기다리는 인증 요청이 없습니다.");
       } else {
         setAuthRequests(res.data.data);
+        console.log("authRequests", authRequests);
         return;
       }
     };
     loadAuthRequests();
   }, []);
 
-  // function ToggleBtn(props) {
-  //   const { orderRequests, setOrderRequests } = props;
+  function ToggleBtn(props) {
+    const { filterRequests, setFilterRequests } = props;
 
-  //   return (
-  //     <nav className="toggleBtn">
-  //       <button
-  //         className="text-gray-500 w-10 h-10 relative focus:outline-none bg-transparent"
-  //         onClick={() => setOrderRequests(!orderRequests)}
-  //       >
-  //         <div className="block w-5 absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
-  //           <span
-  //             aria-hidden="true"
-  //             className={cx(
-  //               "block absolute h-0.5 w-5 bg-gray-500 transform transition duration-500 ease-in-out",
-  //               orderRequests ? "" : "-translate-y-1.5"
-  //             )}
-  //           ></span>
-  //           <span
-  //             aria-hidden="true"
-  //             className={cx(
-  //               "block absolute h-0.5 w-5 bg-gray-500 transform transition duration-500 ease-in-out",
-  //               orderRequests ? "" : ""
-  //             )}
-  //           ></span>
-  //           <span
-  //             aria-hidden="true"
-  //             className={cx(
-  //               "block absolute h-0.5 w-5 bg-gray-500 transform transition duration-500 ease-in-out",
-  //               orderRequests ? "" : "translate-y-1.5"
-  //             )}
-  //           ></span>
-  //         </div>
-  //       </button>
-  //     </nav>
-  //   );
-  // }
+    return (
+      <nav className="toggleBtn">
+        <button
+          className=" text-gray-500 w-10 h-10 focus:outline-none bg-transparent"
+          onClick={() => setFilterRequests(!filterRequests)}
+        >
+          <div className="block w-5 absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
+            <span
+              aria-hidden="true"
+              className={cx(
+                "block absolute h-0.5 w-5 bg-gray-500 transform transition duration-500 ease-in-out",
+                filterRequests ? "" : "-translate-y-1.5"
+              )}
+            ></span>
+            <span
+              aria-hidden="true"
+              className={cx(
+                "block absolute h-0.5 w-5 bg-gray-500 transform transition duration-500 ease-in-out",
+                filterRequests ? "" : ""
+              )}
+            ></span>
+            <span
+              aria-hidden="true"
+              className={cx(
+                "block absolute h-0.5 w-5 bg-gray-500 transform transition duration-500 ease-in-out",
+                filterRequests ? "" : "translate-y-1.5"
+              )}
+            ></span>
+          </div>
+        </button>
+      </nav>
+    );
+  }
 
-  // console.log("orderRequests", orderRequests);
+  console.log("filterRequests", filterRequests);
 
   if (authRequests.length) {
     return (
-      <div className="authRequests" style={{ paddingTop: "75px" }}>
-        <div className="flex-col m-auto justify-center bg-white rounded-xl shadow dark:bg-gray-800 z-10">
-          {/* <ToggleBtn
-            orderRequests={orderRequests}
-            setOrderRequests={setOrderRequests}
+      <div className="authRequests container" style={{ paddingTop: "75px" }}>
+        <div className="fixed float-right bg-white rounded-xl shadow dark:bg-gray-800 z-10">
+          <ToggleBtn
+            filterRequests={filterRequests}
+            setFilterRequests={setFilterRequests}
           />
-          {orderRequests ? (
+          {filterRequests ? (
             <div className="dropContent">
-              <option value="전체"> #전체</option>
-              <option value="운동"> #운동</option>
-              <option value="건강"> #건강</option>
-              <option value="공부"> #공부</option>
-              <option value="독서"> #독서</option>
-              <option value="취미"> #취미</option>
+              <option value="전체">
+                #전체 {authRequests.length}개의 인증 요청
+              </option>
+              <option value="운동">
+                #운동 {authRequests.category === "운동".length}
+                개의 인증 요청
+              </option>
+              <option value="건강">
+                #건강 {authRequests.category === "건강".length}개의 인증 요청
+              </option>
+              <option value="공부">
+                #공부 {authRequests.category === "공부".length}개의 인증 요청
+              </option>
+              <option value="독서">
+                #독서 {authRequests.category === "독서".length}개의 인증 요청
+              </option>
+              <option value="취미">
+                #취미 {authRequests.category === "취미".length}개의 인증 요청
+              </option>
             </div>
-          ) : null} */}
+          ) : //   <div className="dropContent">
+          //   <option value="전체">
+          //     #전체 {authRequests.length}개의 인증 요청
+          //   </option>
+          //   <option value="운동">
+          //     #운동 {authRequests.length}개의 인증 요청
+          //   </option>
+          //   <option value="건강">
+          //     #건강 {authRequests.length}개의 인증 요청
+          //   </option>
+          //   <option value="공부">
+          //     #공부 {authRequests.length}개의 인증 요청
+          //   </option>
+          //   <option value="독서">
+          //     #독서 {authRequests.length}개의 인증 요청
+          //   </option>
+          //   <option value="취미">
+          //     #취미 {authRequests.length}개의 인증 요청
+          //   </option>
+          // </div>
+          null}
         </div>
         <div>
           {authRequests.map((authRequest) => (
@@ -247,7 +281,7 @@ const AuthRequest = ({ authRequest }) => {
     }
   };
 
-  console.log("approvalClicked", approvalClicked);
+  // console.log("approvalClicked", approvalClicked);
 
   return (
     <div className="flex min-w-min min-h-0 md:p-12 p-6 justify-center items-center bg-gray-100">

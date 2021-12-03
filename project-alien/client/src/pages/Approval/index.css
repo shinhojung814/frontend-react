@@ -4,7 +4,7 @@
 
 .toggleBtn {
   /* display: inline; */
-  position: relative;
+  position: fixed;
   display: flex;
   height: 45px;
   weight: 45px;
