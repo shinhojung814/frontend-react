@@ -4,57 +4,39 @@ import ScrollToBottom from "react-scroll-to-bottom";
 import * as socket from "../../../../apis/socket";
 import api from "../../../../apis/index";
 import "./Chat.css";
-import {
-  useDispatch,
-  useSelector,
-  // useDispatch
-} from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import * as actions from "../../../../Redux/actions/index.js";
-// import api from "../../../../apis/index.js";
 
-const ChallengeModal = (props) => {
+const ChatModal = (props) => {
   const [currentMessage, setCurrentMessage] = useState("");
   // const [messageList, setMessageList] = useState([]);
   const dispatch = useDispatch();
   const { challengeId } = useParams();
-  const { roomId } = useSelector(({ room }) => ({
-    roomId: room.roomId,
-  }));
-  const { user } = useSelector(({ user }) => ({ user: user.user }));
 
+  const { user } = useSelector(({ user }) => ({ user: user.user }));
   const { chalInfoModal } = useSelector(({ modalOnOff }) => ({
     chalInfoModal: modalOnOff.chalInfoModal,
   }));
-
-  // useEffect(() => {
-  //   const getLastchat = async () => {
-  //     const res = await api.get(`/chat/${challengeId}`);
-  //     res.data.data.map((msg, index) => {
-  //       dispatch(actions.setMessage(msg));
-  //     });
-  //     console.log("CHAT ", res.data.data);
-  //   };
-  //   if (challengeId) getLastchat();
-  // }, []);
-
   let { messages } = useSelector(({ room }) => ({
     messages: room.messages,
   }));
+
   const { modalType } = props;
   const toggle = modalType && chalInfoModal === modalType;
-  // const dispatch = useDispatch();
 
   const saveChat = async (messageData) => {
     messageData.challenge_id = challengeId;
-    const result = await api.post("/chat", messageData);
-    console.log(result);
+    const res = await api.post("/chat", messageData);
+    if (res.data.result !== "success") {
+      console.error("메시지 저장 실패");
+    }
   };
 
   const sendMessage = async () => {
     if (!user) return;
     if (currentMessage !== "") {
       const messageData = {
-        room: roomId,
+        challengeId: Number(challengeId),
         user_nickname: user.nickname,
         message: currentMessage,
         time:
@@ -69,20 +51,44 @@ const ChallengeModal = (props) => {
           ":" +
           new Date(Date.now()).getMinutes(),
       };
-      console.log(messageData);
+      // console.log("sendMsg", messageData);
       saveChat(messageData);
-      socket.messageSend(messageData);
+      socket.sendMessage(messageData);
       dispatch(actions.setMessage([messageData]));
       setCurrentMessage("");
     }
   };
 
+  const sendEmojis = async(emoji)=>{
+    if (!user) return;
+      const messageData = {
+        challengeId: Number(challengeId),
+        user_nickname: user.nickname,
+        message: emoji,
+        time:
+          new Date(Date.now()).getMonth() +
+          1 +
+          "월" +
+          " " +
+          new Date(Date.now()).getDate() +
+          "일" +
+          " " +
+          new Date(Date.now()).getHours() +
+          ":" +
+          new Date(Date.now()).getMinutes(),
+      };
+      // console.log("sendMsg", messageData);
+      saveChat(messageData);
+      socket.sendMessage(messageData);
+      dispatch(actions.setMessage([messageData]));
+  }
+
   return (
     <div className={toggle ? "ChallengeContainer" : "hidden"}>
-      <div className="boxborder  px-1 mx-auto py-1 my-auto h-full">
+      <div className="boxborder px-1 mx-auto py-1 my-1 h-full">
         <div className="chat-header">
           <p className="font-sans text-white bg-indigo-400 bg-opacity-25 rounded-xl">
-            TALK !{" "}
+            TALK !
           </p>
         </div>
         <br />
@@ -93,13 +99,13 @@ const ChallengeModal = (props) => {
             messages.map((messageContent, index) => {
               return (
                 <div
-                  className="message"
+                className="message"
                   key={index}
                   id={
                     user.nickname === messageContent.user_nickname
                       ? "you"
                       : "other"
-                  } // css 파일에서 구분
+                    } // css 파일에서 구분
                 >
                   <div className="message-align">
                     <div className="message-content">
@@ -117,6 +123,18 @@ const ChallengeModal = (props) => {
         </ScrollToBottom>
 
         <div className="chat-footer">
+          <div className = 'emojis'>
+            <span onClick={()=>sendEmojis('😊')} >😊</span>
+            <span onClick={()=>sendEmojis('😎')} >😎</span>
+            <span onClick={()=>sendEmojis('🤣')} >🤣</span>
+            <span onClick={()=>sendEmojis('😍')} >😍</span>
+            <span onClick={()=>sendEmojis('👍')} >👍</span>
+            <span onClick={()=>sendEmojis('😝')} >😝</span>
+            <span onClick={()=>sendEmojis('❤️')} >❤️</span>
+            <span onClick={()=>sendEmojis('😉')} >😉</span>
+            {/* <span onClick={()=>setCurrentMessage('😊')} >😊</span> */}
+
+          </div> 
           <div className="relative flex">
             <input
               className="chat-input"
@@ -138,10 +156,9 @@ const ChallengeModal = (props) => {
           </div>
         </div>
       </div>
-
-      {/* </div> */}
     </div>
   );
 };
 
-export default ChallengeModal;
+export default ChatModal;
+

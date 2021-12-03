@@ -1,6 +1,8 @@
 import React, { Component } from "react";
 import Canvas from "./Canvas";
 
+import aquarium from "../../../shared";
+
 // import * as socket from "../../../apis/socket";
 
 export default class Field extends Component {
@@ -19,24 +21,40 @@ export default class Field extends Component {
       `rgba(3,33,74,1)`,
       `rgba(1,11,25,1)`,
     ],
+    myRoom: [
+      `rgba(161,226,255,1)`,
+      `rgba(23,202,241,1)`,
+      `rgba(9,142,180,1)`,
+      `rgba(3,107,129,1)`,
+    ],
   };
 
+  // roomId: "user-261"
   draw = (ctx, frameCnt, mouseObj) => {
     // console.log(mouseObj);
     let cvsWidth = ctx.canvas.width;
     let cvsHeight = ctx.canvas.height;
     ctx.save();
-    ctx.clearRect(0, 0, cvsWidth, cvsHeight);
+    ctx.clearRect(0, 0  , cvsWidth, cvsHeight);
 
-    if (this.props.room && this.props.room.fieldState) {
-      const room = this.props.room;
+    const room = aquarium.getCurrentRoom();
+    if (room && room.fieldState) {
       const { monsters } = room.fieldState;
-      // console.log(111, this.props.room.usersOnRoom);
-
+      // console.log(111, room.usersOnRoom);
       // draw background
       let lingrad = ctx.createLinearGradient(0, 0, 0, cvsHeight);
-      let colorset = this.BG_COLORSET["space"];
+      let colorset;
+      if (room.roomId.includes('user')){
+        colorset = this.BG_COLORSET["myRoom"];
+      }
+      else{
+        colorset = this.BG_COLORSET["space"];
+      }
       let pcts = room.camera.getGradientPct();
+      lingrad.addColorStop(0, colorset[0]);
+      lingrad.addColorStop(pcts[0], colorset[1]);
+      lingrad.addColorStop(pcts[1], colorset[2]);
+      lingrad.addColorStop(1, colorset[3]);
       lingrad.addColorStop(0, colorset[0]);
       lingrad.addColorStop(pcts[0], colorset[1]);
       lingrad.addColorStop(pcts[1], colorset[2]);
@@ -64,11 +82,20 @@ export default class Field extends Component {
         0,
         Math.PI * 2
       );
+
       var grd = ctx.createRadialGradient(100, 50, 0, 90, 60, 1000);
-      grd.addColorStop(0, "#f0c0ff");
-      grd.addColorStop(0.25, "#9048f0");
-      grd.addColorStop(0.5, "#6018c0");
-      grd.addColorStop(1, "black");
+      if (room.roomId.includes('user')){
+        grd.addColorStop(0, "#e3f6fa");
+        grd.addColorStop(0.25, "#86e3f7");
+        grd.addColorStop(0.5, "#1c9fba");
+        grd.addColorStop(1, "#0b6f84");
+      }
+      else{
+        grd.addColorStop(0, "#f0c0ff");
+        grd.addColorStop(0.25, "#9048f0");
+        grd.addColorStop(0.5, "#6018c0");
+        grd.addColorStop(1, "black");
+      }
       ctx.fillStyle = grd;
       ctx.fill();
 
@@ -87,7 +114,7 @@ export default class Field extends Component {
         ) {
           // console.log(monId);
           selectedMonster = monId;
-          this.props.handleSelectAlien(monsters[monId]);
+          this.props.handleSelectAlien(monId);
         }
 
         monsters[monId].display(ctx, frameCnt, room);
@@ -99,33 +126,24 @@ export default class Field extends Component {
         //   ctx.fill();
         // }
       }
-
-      if (mouseObj.clicked) {
-        // let destination = {
-        //   x: mouseObj.deltaXfromCenter,
-        //   y: mouseObj.deltaYfromCenter,
-        // };
-        // destination = room.camera.getLocalFromMouse(destination);
-        // socket.changeDestination(room.roomId, destination);
-      }
     }
     ctx.restore();
   };
 
   render() {
-    if (this.props.room) {
-      const camera = this.props.room.camera;
+    const room = aquarium.getCurrentRoom();
+    if (!!room) {
       return (
         <Canvas
           draw={this.draw}
-          onMouseDown={camera.onMouseDown}
-          onMouseMove={camera.onMouseMove}
-          onMouseUp={camera.onMouseUp}
-          onTouchStart={camera.onTouchStart}
-          onTouchMove={camera.onTouchMove}
-          onTouchEnd={camera.onTouchEnd}
-          onWheel={camera.onWheel}
-          onResize={camera.onResize}
+          onMouseDown={room.camera.onMouseDown}
+          onMouseMove={room.camera.onMouseMove}
+          onMouseUp={room.camera.onMouseUp}
+          onTouchStart={room.camera.onTouchStart}
+          onTouchMove={room.camera.onTouchMove}
+          onTouchEnd={room.camera.onTouchEnd}
+          onWheel={room.camera.onWheel}
+          onResize={room.camera.onResize}
         />
       );
     } else {

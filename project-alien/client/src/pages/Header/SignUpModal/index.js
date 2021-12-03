@@ -15,6 +15,7 @@ const SignUpModal = () => {
   const [userPassword, setUserPassword] = useState("");
   const [userConfirm, setUserConfirm] = useState("");
   const [signUpMessage, setSignUpMessage] = useState(null);
+  const [signUpClicked, setSignUpClicked] = useState(false);
 
   const postSignUp = async () => {
     let signUpData = { userEmail, userNickname, userPassword, userConfirm };
@@ -34,11 +35,11 @@ const SignUpModal = () => {
       setUserPassword("");
       setUserConfirm("");
       setSignUpMessage(null);
+      setSignUpClicked(false);
       dispatch(actions.showSignUpModal(!showSignUpModal));
     } else {
-      if (res.data.result === "fail") {
-        setSignUpMessage("이미 존재하는 이메일 주소입니다.");
-      }
+      setSignUpMessage("이미 존재하는 이메일 주소입니다.");
+      setSignUpClicked(false);
     }
   };
 
@@ -99,15 +100,17 @@ const SignUpModal = () => {
     setUserPassword("");
     setUserConfirm("");
     setSignUpMessage(null);
+    setSignUpClicked(false);
     dispatch(actions.showSignUpModal(!showSignUpModal));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setSignUpMessage(null);
+    if (signUpClicked) return;
     if (!validateSignUp(userEmail, userNickname, userPassword, userConfirm))
       return;
     setSignUpMessage(null);
+    setSignUpClicked(true);
     postSignUp();
   };
 
@@ -151,7 +154,7 @@ const SignUpModal = () => {
                 <input
                   type="email"
                   className="flex-1 w-full py-2 px-4 rounded-r-lg appearance-none border border-gray-300 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-                  placeholder="santoryu1118@gmail.com"
+                  placeholder="이메일을 입력해주세요"
                   value={userEmail}
                   onChange={(e) => {
                     setUserEmail(e.target.value);
@@ -180,7 +183,7 @@ const SignUpModal = () => {
                 <input
                   type="text"
                   className="rounded-r-lg flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-                  placeholder="산토류"
+                  placeholder="닉네임을 입력해주세요."
                   value={userNickname}
                   onChange={(e) => {
                     setUserNickname(e.target.value);

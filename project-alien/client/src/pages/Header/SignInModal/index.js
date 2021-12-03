@@ -13,13 +13,16 @@ const SignInModal = () => {
   const [userEmail, setUserEmail] = useState("");
   const [userPassword, setUserPassword] = useState("");
   const [signInMessage, setSignInMessage] = useState(null);
+  const [signInClicked, setSignInClicked] = useState(false);
 
   const postSignIn = async () => {
     let signInData = { email: userEmail, pwd: userPassword };
     // 1단계: 로그인 요청
     let res = await api.post("/user/login", signInData);
+    console.log("res", res);
     if (res.data.result !== "success") {
       setSignInMessage("이메일과 패스워드가 일치하지 않습니다.");
+      setSignInClicked(false);
       return;
     }
     let user = res.data;
@@ -30,6 +33,7 @@ const SignInModal = () => {
     res = await api.get("/user/challenges/ids");
     if (res.data.result === "success") {
       user.challenges = res.data.challenges;
+      setSignInClicked(false);
     }
     dispatch(actions.checkUser(user));
     dispatch(actions.showSignInModal(!showSignInModal));
@@ -59,13 +63,16 @@ const SignInModal = () => {
     setUserEmail("");
     setUserPassword("");
     setSignInMessage(null);
+    setSignInClicked(false);
     dispatch(actions.showSignInModal(!showSignInModal));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (signInClicked) return;
     if (!validateSignIn(userEmail, userPassword)) return;
     setSignInMessage(null);
+    setSignInClicked(true);
     postSignIn();
   };
 
@@ -109,7 +116,7 @@ const SignInModal = () => {
                 <input
                   type="text"
                   className=" rounded-r-lg flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-                  placeholder="santoryu1118@gmail.com"
+                  placeholder="이메일을 입력해주세요."
                   value={userEmail}
                   onChange={(e) => {
                     setUserEmail(e.target.value);
