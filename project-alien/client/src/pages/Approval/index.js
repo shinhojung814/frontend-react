@@ -15,6 +15,7 @@ const cx = classNames.bind();
 export default function Approval(props) {
   const [authRequests, setAuthRequests] = useState([]);
   const [filterRequests, setFilterRequests] = useState(false);
+  const [authCategory, setAuthCategory] = useState("");
 
   useEffect(() => {
     const loadAuthRequests = async () => {
@@ -24,7 +25,6 @@ export default function Approval(props) {
         console.log("현재 수락을 기다리는 인증 요청이 없습니다.");
       } else {
         setAuthRequests(res.data.data);
-        console.log("authRequests", authRequests);
         return;
       }
     };
@@ -68,68 +68,98 @@ export default function Approval(props) {
     );
   }
 
-  console.log("filterRequests", filterRequests);
+  // const challengeMap = [];
+
+  // for (var i = 0; i < authRequests.length; i++) {
+  //   var auth = authRequests[i];
+  //   challengeMap[auth.challenge_name] =
+  //     challengeMap[auth.challenge_name] + 1 || 1;
+  // }
+
+  const challengeMap = new Map();
+
+  for (var i = 0; i < authRequests.length; i++) {
+    var auth = authRequests[i];
+    if (!(auth.challenge_name in challengeMap)) {
+      challengeMap.set(auth.challenge_name, 1);
+    } else {
+      // challengeMap.get(auth.challenge_name)++;
+    }
+  }
+
+  console.log("authRequests", authRequests);
+  console.log("challengeMap", challengeMap.get("아침 6시 헬스"));
 
   if (authRequests.length) {
     return (
       <div className="authRequests container" style={{ paddingTop: "75px" }}>
-        <div className="fixed float-right bg-white rounded-xl shadow dark:bg-gray-800 z-10">
+        <div className="fixed bg-white rounded-xl shadow dark:bg-gray-800 z-10">
           <ToggleBtn
             filterRequests={filterRequests}
             setFilterRequests={setFilterRequests}
           />
           {filterRequests ? (
             <div className="dropContent">
-              <option value="전체">
-                #전체 {authRequests.length}개의 인증 요청
+              <option
+                value=""
+                onClick={(e) => {
+                  setAuthCategory(e.target.value);
+                  setFilterRequests(false);
+                }}
+              >
+                전체 보기 ({authRequests.length})
               </option>
-              <option value="운동">
-                #운동 {authRequests.category === "운동".length}
-                개의 인증 요청
-              </option>
-              <option value="건강">
-                #건강 {authRequests.category === "건강".length}개의 인증 요청
-              </option>
-              <option value="공부">
-                #공부 {authRequests.category === "공부".length}개의 인증 요청
-              </option>
-              <option value="독서">
-                #독서 {authRequests.category === "독서".length}개의 인증 요청
-              </option>
-              <option value="취미">
-                #취미 {authRequests.category === "취미".length}개의 인증 요청
-              </option>
+              {/* {authRequests.map((authRequest) => (
+                <option
+                  value={authRequest.challenge_name}
+                  onClick={(e) => {
+                    setAuthCategory(e.target.value);
+                    setFilterRequests(false);
+                  }}
+                >
+                  {authRequest.challenge_name}
+                </option>
+              ))} */}
+              {challengeMap.map((challenge) => (
+                <option
+                  value={challengeMap[challenge].key}
+                  onClick={(e) => {
+                    setAuthCategory(e.target.value);
+                    setFilterRequests(false);
+                  }}
+                >
+                  {challengeMap[challenge].key} ({challengeMap[challenge].value}
+                  )
+                </option>
+              ))}
             </div>
-          ) : //   <div className="dropContent">
-          //   <option value="전체">
-          //     #전체 {authRequests.length}개의 인증 요청
-          //   </option>
-          //   <option value="운동">
-          //     #운동 {authRequests.length}개의 인증 요청
-          //   </option>
-          //   <option value="건강">
-          //     #건강 {authRequests.length}개의 인증 요청
-          //   </option>
-          //   <option value="공부">
-          //     #공부 {authRequests.length}개의 인증 요청
-          //   </option>
-          //   <option value="독서">
-          //     #독서 {authRequests.length}개의 인증 요청
-          //   </option>
-          //   <option value="취미">
-          //     #취미 {authRequests.length}개의 인증 요청
-          //   </option>
-          // </div>
-          null}
+          ) : null}
         </div>
-        <div>
-          {authRequests.map((authRequest) => (
-            <AuthRequest
-              key={authRequest.practice_record_id}
-              authRequest={authRequest}
-            />
-          ))}
-        </div>
+        {authCategory === "" ? (
+          <div>
+            {authRequests.map((authRequest) => (
+              <AuthRequest
+                key={authRequest.practice_record_id}
+                authRequest={authRequest}
+                authCategory={authCategory}
+              />
+            ))}
+          </div>
+        ) : (
+          <div>
+            {authRequests
+              .filter(
+                (authRequest) => authRequest.challenge_name === authCategory
+              )
+              .map((authRequest) => (
+                <AuthRequest
+                  key={authRequest.practice_record_id}
+                  authRequest={authRequest}
+                  authCategory={authCategory}
+                />
+              ))}
+          </div>
+        )}
       </div>
     );
   } else {
@@ -141,7 +171,7 @@ export default function Approval(props) {
   }
 }
 
-const AuthRequest = ({ authRequest }) => {
+const AuthRequest = ({ authRequest, authCategory }) => {
   const { user } = useSelector(({ user }) => ({ user: user.user }));
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -154,6 +184,8 @@ const AuthRequest = ({ authRequest }) => {
 
   const [approvalStatus, setApprovalStatus] = useState(false);
   const [approvalClicked, setApprovalClicked] = useState(false);
+
+  console.log("authCategory", authCategory);
 
   const postApproval = async () => {
     const req = await api.post("/challenge/approval", {
@@ -280,8 +312,6 @@ const AuthRequest = ({ authRequest }) => {
       );
     }
   };
-
-  // console.log("approvalClicked", approvalClicked);
 
   return (
     <div className="flex min-w-min min-h-0 md:p-12 p-6 justify-center items-center bg-gray-100">

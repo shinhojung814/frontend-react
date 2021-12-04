@@ -1,5 +1,5 @@
 .LazyLoadImage {
-  @apply mt-6 ml-auto mr-auto;
+  @apply mt-6;
 }
 
 .toggleBtn {
