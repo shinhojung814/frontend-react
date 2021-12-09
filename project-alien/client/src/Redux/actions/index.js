@@ -1,11 +1,6 @@
 // 액션 생성 함수들
 import * as types from "./ActionTypes";
 
-// export const showModal2 = (onoff) => ({
-//   type: types.SHOW_MODAL2,
-//   showModal2: onoff,
-// });
-
 export const setChalInfoModal = (chalInfoModal) => ({
   type: types.SET_CHAL_INFO_MODAL,
   chalInfoModal,
@@ -66,6 +61,11 @@ export const selectAlien = (selectedAlien) => ({
 export const graduate = (alienId) => ({
   type: types.GRADUATE_ALIEN,
   payload: alienId,
+});
+
+export const thanosAliens = (killed) => ({
+  type: types.THANOS_ALIENS,
+  payload: killed,
 });
 
 export const requestAuth = (alienId) => ({

@@ -1,6 +1,6 @@
 import { Link, useMatch } from "react-router-dom";
 import { RiSearchEyeLine, RiSearchEyeFill } from "react-icons/ri";
-// import { RiSearch2Line, RiSearch2Fill } from "react-icons/ri";
+
 
 import styles from "../index.module.css";
 import classNames from "classnames/bind";

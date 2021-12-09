@@ -28,8 +28,8 @@ export function sendMessage(message) {
 }
 
 export function receiveMessage(handler) {
-  console.log("[socket] receiveMessage");
   if (!socket) return;
+  console.log("[socket] receiveMessage");
   socket.on("receive_message", handler);
 }
 
@@ -79,6 +79,11 @@ export function emitGraduate(userinfo) {
 export function onGraduate(handler) {
   if (!socket) return;
   socket.on("graduate_challenge", handler);
+}
+
+export function onThanosDone(handler) {
+  if (!socket) return;
+  socket.on("thanos_done", handler);
 }
 
 // // // // // // // // // // // // // // // // // // // //

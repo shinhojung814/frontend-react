@@ -1,9 +1,8 @@
 import React from "react";
 import { useSelector } from "react-redux";
-// import api from "../../apis";
 import { Link, useMatch, Navigate } from "react-router-dom";
-import { RiUserFill } from "react-icons/ri";
-import { GiSupersonicArrow } from "react-icons/gi";
+import { GiSupersonicArrow, GiAquarium } from "react-icons/gi";
+
 import styles from "./index.module.css";
 import classNames from "classnames/bind";
 const cx = classNames.bind(styles);
@@ -26,8 +25,8 @@ export default function Title(props) {
   if (!!userMatch) {
     return (
       <div className={styles.titleBox}>
-        <span className={styles.titleIcon}>
-          <RiUserFill />
+        <span className={styles.titleIcon} style={{ alignSelf: 'flex-end' }}>
+          <GiAquarium size={36} />
         </span>
         <span className={styles.titleText}>{roomTitle}</span>
       </div>
@@ -65,7 +64,7 @@ export default function Title(props) {
           challenge.participant_number < challenge.maximum_number && (
             <Link to={`/challenge/${challengeId}/join`}>
               <button className={cx("JoinBtn", "JoinBtn--start")}>
-                시작하기
+                참가하기
               </button>
             </Link>
           )}
@@ -121,7 +120,8 @@ export default function Title(props) {
     return (
       <div className={styles.titleBox}>
         <span className={styles.titleIcon}>
-          <GiSupersonicArrow />
+          {/* <HiOutlineHome size={35} /> */}
+          <img src={require("../../image/Chalit_192.png").default} alt='main-logo' />
         </span>
         <span className={styles.titleText}>{roomTitle}</span>
       </div>

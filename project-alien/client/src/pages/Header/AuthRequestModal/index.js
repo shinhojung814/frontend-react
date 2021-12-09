@@ -42,7 +42,14 @@ export default function AuthRequestModal(props) {
     );
     let today = day[date.getDay()];
     if (alien[today] === 0) {
-      console.log("인증 가능 요일이 아닙니다.");
+      dispatch(
+        actions.setPopupModal(
+          "AUTH_DAY",
+          "인증 가능 요일이 아닙니다 !",
+          "FAIL",
+          () => {}
+        )
+      );
       return;
     } else {
     }
@@ -50,24 +57,43 @@ export default function AuthRequestModal(props) {
     /* 예외 처리 Handling 2. */
     if (alien.practice_status > 0) {
       /* 해당 날짜에 이미 요청된 Alien 인 경우 -> front에서 Error 문구 처리 부탁드립니다. */
-      console.log("이미 인증요청 완료된 건 입니다.");
-      // alert("이미 인증 요청이 완료되었습니다.")
+      dispatch(
+        actions.setPopupModal(
+          "AUTH_REQ_EXIST",
+          "이미 인증요청이 완료된 건 입니다 !",
+          "FAIL",
+          () => {}
+        )
+      );
       return;
     }
 
-    let res = await api.get("/main/s3Url");
+    if (!authImage) {
+      setAuthRequestClicked(false);
+      dispatch(
+        actions.setPopupModal(
+          "AUTH_IMAGE_ABSENT",
+          "인증 사진을 첨부해주세요!",
+          "FAIL",
+          () => {}
+        )
+      );
+      return;
+    }
+
+    const filetype = authImage[0].type;
+    let res = await api.post("/main/s3Url_approval", { filetype: filetype });
     const { url } = res.data;
     console.log("res", res);
-    // post the image direclty to the s3 bucket
-    if (authImage) {
-      await fetch(url, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        body: authImage[0],
-      });
-    }
+    // post the image directly to the s3 bucket
+    await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+      body: authImage[0],
+    });
+
     const imageUrl = url.split("?")[0];
     const resp = {
       user_info_id: alien.user_info_id,
@@ -77,7 +103,6 @@ export default function AuthRequestModal(props) {
       image_url: imageUrl,
     };
 
-    // setAuthRequestClicked(true);
     res = await api.post("/challenge/auth", resp);
     console.log("res", res);
 
@@ -108,9 +133,9 @@ export default function AuthRequestModal(props) {
   };
 
   const handleCancel = () => {
-    dispatch(actions.showAuthRequest(false));
     setAuthRequestClicked(false);
     setAuthImage(null);
+    dispatch(actions.showAuthRequest(false));
   };
 
   if (!showAuthRequest) {
@@ -122,7 +147,7 @@ export default function AuthRequestModal(props) {
     return <div />;
   }
 
-  console.log("authRequestClicked", authRequestClicked);
+  console.log("authImage", authImage);
 
   return (
     <div>
@@ -147,22 +172,23 @@ export default function AuthRequestModal(props) {
           </div>
           <div className=" px-1 py-4 text-lg ">
             <div className="pb-8">
-              <h2 className="text-3xl font-bold">{alien.challenge_name}</h2>
+              <h2 className="text-2xl sm:text-3xl font-extrabold">
+                {alien.challenge_name}
+              </h2>
             </div>
             <div className="pb-4">
               <label className="text-xl font-bold">인증 사진 첨부</label>
             </div>
             <div className="Attachments1">
-              <div className="flex flex-col fixed min-h-0  items-center">
+              <div className="flex flex-col fixed min-h-0 items-center">
                 <i className="fa fa-folder-open fa-3x text-blue-700" />
-                <span className="block text-gray-400 font-normal text-center  text-sm md:text-lg sm:text-xs">
-                  클릭 또는 드래그하여 인증 사진을 올려주세요.
+                <span className=" text-gray-400 font-normal text-center text-xs sm:text-sm md:text-md lg:text-lg">
+                  클릭하여 인증 사진을 올려주세요.
                 </span>
               </div>
               <input
                 type="file"
                 className="h-full opacity-0 justify-center"
-                name=""
                 accept="image/*"
                 id="imageInput"
                 onChange={(e) => {
@@ -184,7 +210,7 @@ export default function AuthRequestModal(props) {
               ></textarea>
             </div>
             {authImage && authImage[0] ? (
-              <div className=" py-6">
+              <div className="py-6">
                 <img
                   style={{
                     maxHeight: "200px",

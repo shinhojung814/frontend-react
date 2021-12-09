@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import "./SignInModal.css";
 import api from "../../../apis/index.js";
 import * as actions from "../../../Redux/actions";
+import { useNavigate } from 'react-router-dom';
 
 const SignInModal = () => {
   const dispatch = useDispatch();
@@ -15,28 +16,22 @@ const SignInModal = () => {
   const [signInMessage, setSignInMessage] = useState(null);
   const [signInClicked, setSignInClicked] = useState(false);
 
+  const navigate = useNavigate();
+
   const postSignIn = async () => {
     let signInData = { email: userEmail, pwd: userPassword };
     // 1단계: 로그인 요청
     let res = await api.post("/user/login", signInData);
-    console.log("res", res);
+    // console.log("res", res);
     if (res.data.result !== "success") {
       setSignInMessage("이메일과 패스워드가 일치하지 않습니다.");
       setSignInClicked(false);
-      return;
-    }
-    let user = res.data;
-    delete user.result;
-    user.login = true;
-    user.challenges = [];
-    // 2단계: 유저 관련 정보 확인 (참여중 챌린지 등)
-    res = await api.get("/user/challenges/ids");
-    if (res.data.result === "success") {
-      user.challenges = res.data.challenges;
+    } else {
+      dispatch(actions.checkUser(res.data.user));
+      dispatch(actions.showSignInModal(!showSignInModal));
       setSignInClicked(false);
+      navigate(`/user/${res.data.user.id}/room`)
     }
-    dispatch(actions.checkUser(user));
-    dispatch(actions.showSignInModal(!showSignInModal));
   };
 
   function validateSignIn(userEmail, userPassword) {
@@ -114,7 +109,7 @@ const SignInModal = () => {
                   </svg>
                 </span>
                 <input
-                  type="text"
+                  type="email"
                   className=" rounded-r-lg flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
                   placeholder="이메일을 입력해주세요."
                   value={userEmail}

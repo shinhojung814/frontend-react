@@ -36,6 +36,7 @@ class RoomClient {
         showBubble: mon.showBubble || false,
         practiceStatus: mon.practice_status || 0,
         practiceDays: mon.practiceDays || [],
+        alienStatus: mon.alien_status || 0,
       });
       monster.isUserOnRoom = this.usersOnRoom.includes(monster.userId);
       // console.log(monster.monId, monster.isUserOnRoom);
@@ -45,6 +46,20 @@ class RoomClient {
 
   getMonster = (monId) => {
     return this.fieldState.monsters[monId];
+  };
+
+  removeMonster = (monId) => {
+    delete this.fieldState.monsters[monId];
+    // camera가 따라가던 monster가 monId 였으면 chasingTarget 초기화
+    if (this.camera.getChasingTarget() === monId) {
+      this.camera.cancelChasing();
+    }
+  };
+
+  afterThanos = () => {
+    for (let monId in this.fieldState.monsters) {
+      this.fieldState.monsters[monId].overwrite({ practiceStatus: 0 });
+    }
   };
 
   syncFieldState = (socketState) => {

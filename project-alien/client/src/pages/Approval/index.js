@@ -6,6 +6,10 @@ import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import NoAuthRequest from "./NoAuthRequest.js";
+import { GiSupersonicArrow } from "react-icons/gi";
+import { BiLike } from "react-icons/bi";
+import { AiFillLike } from "react-icons/ai";
+
 import "./index.css";
 import "./blur.css";
 import classNames from "classnames/bind";
@@ -14,52 +18,66 @@ const cx = classNames.bind();
 
 export default function Approval(props) {
   const [authRequests, setAuthRequests] = useState([]);
-  const [filterRequests, setFilterRequests] = useState(false);
-  const [authCategory, setAuthCategory] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const [authCategory, setAuthCategory] = useState(0);
+  const [challenges, setChallenges] = useState([]);
 
   useEffect(() => {
     const loadAuthRequests = async () => {
       const res = await api.get("/user/approval/list");
-      if (!res.data.data.length) {
-        console.log("res", res);
-        console.log("현재 수락을 기다리는 인증 요청이 없습니다.");
+      if (res.data.result === "success") {
+        let auths = res.data.data;
+        let challenges = {};
+        auths.forEach((auth) => {
+          let challengeId = auth.challenge_id;
+          if (!(challengeId in challenges)) {
+            challenges[challengeId] = {
+              id: challengeId,
+              name: auth.challenge_name,
+              count: 0,
+            };
+          }
+          challenges[challengeId].count += 1;
+        });
+        challenges = Object.values(challenges);
+        setChallenges(challenges);
+        setAuthRequests(auths);
       } else {
-        setAuthRequests(res.data.data);
-        return;
+        // TODO: 에러 처리
       }
     };
     loadAuthRequests();
   }, []);
 
   function ToggleBtn(props) {
-    const { filterRequests, setFilterRequests } = props;
+    const { showFilters, setShowFilters } = props;
 
     return (
       <nav className="toggleBtn">
         <button
-          className=" text-gray-500 w-10 h-10 focus:outline-none bg-transparent"
-          onClick={() => setFilterRequests(!filterRequests)}
+          className="w-10 h-10 focus:outline-none bg-transparent text-gray-500"
+          onClick={() => setShowFilters(!showFilters)}
         >
           <div className="block w-5 absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
             <span
               aria-hidden="true"
               className={cx(
                 "block absolute h-0.5 w-5 bg-gray-500 transform transition duration-500 ease-in-out",
-                filterRequests ? "" : "-translate-y-1.5"
+                showFilters ? "" : "-translate-y-1.5"
               )}
             ></span>
             <span
               aria-hidden="true"
               className={cx(
                 "block absolute h-0.5 w-5 bg-gray-500 transform transition duration-500 ease-in-out",
-                filterRequests ? "" : ""
+                showFilters ? "" : ""
               )}
             ></span>
             <span
               aria-hidden="true"
               className={cx(
                 "block absolute h-0.5 w-5 bg-gray-500 transform transition duration-500 ease-in-out",
-                filterRequests ? "" : "translate-y-1.5"
+                showFilters ? "" : "translate-y-1.5"
               )}
             ></span>
           </div>
@@ -68,74 +86,49 @@ export default function Approval(props) {
     );
   }
 
-  // const challengeMap = [];
-
-  // for (var i = 0; i < authRequests.length; i++) {
-  //   var auth = authRequests[i];
-  //   challengeMap[auth.challenge_name] =
-  //     challengeMap[auth.challenge_name] + 1 || 1;
-  // }
-
-  const challengeMap = new Map();
-
-  for (var i = 0; i < authRequests.length; i++) {
-    var auth = authRequests[i];
-    if (!(auth.challenge_name in challengeMap)) {
-      challengeMap.set(auth.challenge_name, 1);
-    } else {
-      // challengeMap.get(auth.challenge_name)++;
-    }
-  }
-
-  console.log("authRequests", authRequests);
-  console.log("challengeMap", challengeMap.get("아침 6시 헬스"));
-
   if (authRequests.length) {
     return (
       <div className="authRequests container" style={{ paddingTop: "75px" }}>
         <div className="fixed bg-white rounded-xl shadow dark:bg-gray-800 z-10">
           <ToggleBtn
-            filterRequests={filterRequests}
-            setFilterRequests={setFilterRequests}
+            showFilters={showFilters}
+            setShowFilters={setShowFilters}
           />
-          {filterRequests ? (
+          {showFilters ? (
             <div className="dropContent">
               <option
                 value=""
                 onClick={(e) => {
-                  setAuthCategory(e.target.value);
-                  setFilterRequests(false);
+                  setAuthCategory(0);
+                  window.scrollTo({
+                    top: 100,
+                    behavior: "smooth",
+                  });
+                  setShowFilters(false);
                 }}
               >
                 전체 보기 ({authRequests.length})
               </option>
-              {/* {authRequests.map((authRequest) => (
+              {challenges.map((challenge) => (
                 <option
-                  value={authRequest.challenge_name}
+                  key={challenge.id}
+                  value={challenge.id}
                   onClick={(e) => {
-                    setAuthCategory(e.target.value);
-                    setFilterRequests(false);
+                    setAuthCategory(challenge.id);
+                    window.scrollTo({
+                      top: 100,
+                      behavior: "smooth",
+                    });
+                    setShowFilters(false);
                   }}
                 >
-                  {authRequest.challenge_name}
-                </option>
-              ))} */}
-              {challengeMap.map((challenge) => (
-                <option
-                  value={challengeMap[challenge].key}
-                  onClick={(e) => {
-                    setAuthCategory(e.target.value);
-                    setFilterRequests(false);
-                  }}
-                >
-                  {challengeMap[challenge].key} ({challengeMap[challenge].value}
-                  )
+                  {challenge.name} ({challenge.count})
                 </option>
               ))}
             </div>
           ) : null}
         </div>
-        {authCategory === "" ? (
+        {authCategory === 0 ? (
           <div>
             {authRequests.map((authRequest) => (
               <AuthRequest
@@ -149,7 +142,7 @@ export default function Approval(props) {
           <div>
             {authRequests
               .filter(
-                (authRequest) => authRequest.challenge_name === authCategory
+                (authRequest) => authRequest.challenge_id === authCategory
               )
               .map((authRequest) => (
                 <AuthRequest
@@ -184,8 +177,6 @@ const AuthRequest = ({ authRequest, authCategory }) => {
 
   const [approvalStatus, setApprovalStatus] = useState(false);
   const [approvalClicked, setApprovalClicked] = useState(false);
-
-  console.log("authCategory", authCategory);
 
   const postApproval = async () => {
     const req = await api.post("/challenge/approval", {
@@ -252,6 +243,9 @@ const AuthRequest = ({ authRequest, authCategory }) => {
     navigate(`/challenge/${authRequest.challenge_id}/room`);
   };
 
+  const image_url_origin = authRequest.image_url;
+  const image_url_opt = image_url_origin.replace("origin", "M");
+
   const ApprovalButton = () => {
     if (!approvalStatus & !authRequest.record_status) {
       return (
@@ -262,19 +256,7 @@ const AuthRequest = ({ authRequest, authCategory }) => {
         >
           <div className="flex gap-2">
             <div className="col-span-1">
-              <svg
-                className="lg:h-12 lg:w-12 h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 13l-3 3m0 0l-3-3m3 3V8m0 13a9 9 0 110-18 9 9 0 010 18z"
-                />
-              </svg>
+              <BiLike />
             </div>
             <div className="m-auto md:min-w-max md:text-xl text-sm truncate">
               인증 수락
@@ -290,19 +272,7 @@ const AuthRequest = ({ authRequest, authCategory }) => {
         >
           <div className="flex gap-2">
             <div className="col-span-1">
-              <svg
-                className="lg:h-12 lg:w-12 h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 13l-3 3m0 0l-3-3m3 3V8m0 13a9 9 0 110-18 9 9 0 010 18z"
-                />
-              </svg>
+              <AiFillLike />
             </div>
             <div className="m-auto md:min-w-max md:text-xl text-sm truncate">
               인증 완료
@@ -320,7 +290,8 @@ const AuthRequest = ({ authRequest, authCategory }) => {
         <div className="flex flex-col justify-center items-center">
           <LazyLoadImage
             className="LazyLoadImage"
-            src={authRequest.image_url}
+            src={image_url_opt}
+            onError={(e) => (e.target.src = image_url_opt)}
             alt="authImage"
             threshold="10"
             effect="blur"
@@ -328,8 +299,13 @@ const AuthRequest = ({ authRequest, authCategory }) => {
         </div>
         <div className="flex flex-col justify-center items-center mb-2">
           <div className="mb-2 space-x-4">
-            <div className="mt-6 mb-4 md:px-8 px-4 text-center md:text-2xl text-lg font-bold text-black">
-              "{authRequest.request_user}" 님의 [{authRequest.challenge_name}]
+            <div className="mt-6 mb-4 md:px-8 px-4 text-center md:text-2xl text-lg text-black">
+              <h1 className="inline font-bold">"{authRequest.request_user}"</h1>{" "}
+              님의
+              <br />
+              <h1 className="inline font-bold">
+                [{authRequest.challenge_name}]
+              </h1>{" "}
               인증 요청
             </div>
             <div className="flex flex-col justify-center items-center md:px-8 text-center md:text-xl text-lg font-semibold text-gray-600 mt-2 mb-2">
@@ -341,7 +317,7 @@ const AuthRequest = ({ authRequest, authCategory }) => {
         <div>
           <div className="flex-col min-w-min w-full justify-center items-center px-6 py-2">
             <div className="flex-col m-auto bg-gray-300 rounded-lg px-2 py-2">
-              <h1 className="flex justify-center items-center py-2 mb-1 md:text-xl text:lg font-semibold text-black">
+              <h1 className="flex justify-center items-center py-2 mb-1 md:text-xl text-center text:lg font-semibold text-black">
                 "{authRequest.comments}"
               </h1>
             </div>
@@ -356,19 +332,7 @@ const AuthRequest = ({ authRequest, authCategory }) => {
           >
             <div className="flex gap-2">
               <div className="col-span-1">
-                <svg
-                  className="lg:h-12 lg:w-12 h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 13l-3 3m0 0l-3-3m3 3V8m0 13a9 9 0 110-18 9 9 0 010 18z"
-                  />
-                </svg>
+                <GiSupersonicArrow />
               </div>
               <div className="m-auto md:min-w-max md:text-xl text-sm truncate">
                 챌린지룸 이동

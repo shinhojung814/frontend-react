@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Title from "./Title";
 
 import ToggleBtn from "./Buttons/ToggleBtn";
@@ -52,7 +52,7 @@ export default function Header(props) {
   useEffect(() => {
     const getLoginStatus = async () => {
       //  유저 정보 확인 (참여중 챌린지 등)
-      let res = await api.get("/user/challenges/ids");
+      let res = await api.get("/user/confirm");
       if (res.data.result === "success") {
         let user = res.data.user;
         user.login = true;
@@ -66,7 +66,7 @@ export default function Header(props) {
 
   // login 여부 확인 완료된 시점에 접근하도록 구분
   if (user === null) {
-    return <div>로딩중...</div>;
+    return <div></div>;
   }
 
   return (
