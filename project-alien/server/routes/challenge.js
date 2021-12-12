@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-module.exports = function (pool) {
+module.exports = function (pool, rdsClient) {
   router.get("/:challengeId", function (req, res) {
     console.log("/challenge/:challengeId", req.params.challengeId);
     pool.getConnection(function (err, connection) {
@@ -134,44 +134,14 @@ module.exports = function (pool) {
     }
   });
 
-  // 챌린지 total_auth_cnt 보내주기
-  router.get("/totalAuthCnt/:challengeId", function (req, res) {
-    const challengeId = req.params.challengeId;
-    pool.getConnection(function (err, connection) {
-      if (err) throw err;
-      connection.query(
-        "SELECT times_per_week FROM challenge WHERE id=?;",
-        [challengeId],
-        function (error, results) {
-          if (error) {
-            console.error(error);
-            res.status(200).json({
-              result: "fail",
-              msg: "cant query to select",
-            });
-            return;
-          }
-          res.status(200).json({
-            result: "success",
-            msg: "do insert",
-            times_per_week: results[0].times_per_week,
-          });
-          connection.release();
-        }
-      );
-    });
-  });
-
   // 챌린지 인증 요청
   // Data Type : Front 쪽에서 data JSON Type으로 서버로 전달
   // var data = {user_info_id : 2, Alien_id : 2, Challenge_id : 2, requestUserNickname : 'john', imgURL : 'test_url' comment: 'comment'};
   router.post("/auth", function (req, res) {
-    var data = req.body;
-    const alien_id = req.body.alien_id;
+    let data = req.body;
     data.request_user = req.user.nickname;
-    console.log(req.user.nickname);
-    console.log("서버 유저아이디 확인 :", data.user_info_id);
-    var sql1 = `INSERT INTO practice_record SET ?;`;
+    const alien_id = req.body.alien_id;
+    const sql1 = `INSERT INTO practice_record SET ?;`;
     pool.getConnection(function (err, connection) {
       if (err) throw err;
       connection.query(sql1, data, function (error, results, fields) {
@@ -185,8 +155,8 @@ module.exports = function (pool) {
           return;
         }
 
-        var sql2 = `UPDATE alien SET practice_status=1 where id=${alien_id}`;
-        connection.query(sql2, function (err, results, fields) {
+        const sql2 = `UPDATE alien SET practice_status=1 where id=${alien_id}`;
+        connection.query(sql2, async (err, results, fields) => {
           if (err) {
             console.error(err);
             res.json({
@@ -196,13 +166,35 @@ module.exports = function (pool) {
             connection.release();
             return;
           }
+
           res.json({
             result: "success",
             msg: "인증요청이 완료되었습니다.",
           });
+
+          // TODO:
+          // 1단계: 타노스의 시간인지 확인: 23:25 ~ 24:05
+          let today = new Date(
+            new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" })
+          );
+          let hours = today.getHours();
+          let minutes = today.getMinutes();
+          if (hours == 23 && minutes >= 25) {
+            // 2단계: 타노스의 시간인 경우, 레디스 처리
+            if (!!rdsClient.connected) {
+              try {
+                const challenge_id = req.body.challenge_id;
+                const alien_id = req.body.alien_id;
+                let value = await rdsClient.HDEL(`chal-${challenge_id}`, `${alien_id}`);
+                console.log("death note", value);
+                }
+              catch (err) {
+                console.error("NOT EXIST chal-alien", err);
+              }
+            }
+          }
           connection.release();
           return;
-          // ++추가구현 필요++ 동일한 챌린지의 멤버들이 접속중일 때, 실시간으로 연락이 갈 것. ( 해당 소켓의 room member에게 'msg' )
         });
       });
     });
